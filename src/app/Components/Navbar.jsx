@@ -72,8 +72,8 @@ const Navbar = () => {
                             <Link
                                 href="/login"
                                 className={`px-5 py-2 rounded-full border border-[#2F855A] transition ${pathname === "/login"
-                                        ? "bg-[#2F855A] text-white"
-                                        : "text-[#2F855A] hover:bg-[#2F855A] hover:text-white"
+                                    ? "bg-[#2F855A] text-white"
+                                    : "text-[#2F855A] hover:bg-[#2F855A] hover:text-white"
                                     }`}
                             >
                                 Login
@@ -82,8 +82,8 @@ const Navbar = () => {
                             <Link
                                 href="/register"
                                 className={`px-5 py-2 rounded-full border border-[#2F855A] transition ${pathname === "/register"
-                                        ? "bg-[#2F855A] text-white"
-                                        : "text-[#2F855A] hover:bg-[#2F855A] hover:text-white"
+                                    ? "bg-[#2F855A] text-white"
+                                    : "text-[#2F855A] hover:bg-[#2F855A] hover:text-white"
                                     }`}
                             >
                                 Register
@@ -151,8 +151,8 @@ const Navbar = () => {
                                     <Link
                                         href="/login"
                                         className={`block px-4 py-2 rounded-full border border-[#2F855A] text-center ${pathname === "/login"
-                                                ? "bg-[#2F855A] text-white"
-                                                : "text-[#2F855A]"
+                                            ? "bg-[#2F855A] text-white"
+                                            : "text-[#2F855A]"
                                             }`}
                                     >
                                         Login
@@ -161,8 +161,8 @@ const Navbar = () => {
                                     <Link
                                         href="/register"
                                         className={`block px-4 py-2 rounded-full border border-[#2F855A] text-center ${pathname === "/register"
-                                                ? "bg-[#2F855A] text-white"
-                                                : "text-[#2F855A]"
+                                            ? "bg-[#2F855A] text-white"
+                                            : "text-[#2F855A]"
                                             }`}
                                     >
                                         Register
