@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Check } from "@gravity-ui/icons";
 import {
@@ -20,10 +21,10 @@ const RegisterPage = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
 
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+        const formData = new FormData(e.currentTarget);
+        const userData = Object.fromEntries(formData.entries());
 
-        const password = formData.get("password");
+        const password = userData.password;
 
         if (password.length < 6) {
             toast.error("Password must be at least 6 characters");
@@ -40,34 +41,20 @@ const RegisterPage = () => {
             return;
         }
 
-        const userData = {
-            name: formData.get("name"),
-            email: formData.get("email"),
-            photoURL: formData.get("photoURL"),
-            password,
-        };
+        const { data, error } = await authClient.signUp.email({
+            name: userData.name,
+            email: userData.email,
+            password: userData.password,
+            image: userData.photoURL,
+        });
 
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(userData),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                toast.error(data.message || "Registration failed");
-                return;
-            }
-
-            toast.success("Registration successful! Please login.");
-            router.push("/login");
-        } catch (error) {
-            toast.error("Something went wrong. Please try again.");
+        if (error) {
+            toast.error(error.message || "Registration failed");
+            return;
         }
+
+        toast.success("Registration successful! Please login.");
+        router.push("/login");
     };
 
     return (
@@ -118,7 +105,7 @@ const RegisterPage = () => {
                         <FieldError />
                     </TextField>
 
-                    <TextField isRequired name="photoURL" type="text">
+                    <TextField name="photoURL" type="text">
                         <Label className="text-[#102A43] font-medium">Photo URL</Label>
                         <Input
                             placeholder="https://example.com/photo.jpg"

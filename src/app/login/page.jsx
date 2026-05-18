@@ -13,6 +13,7 @@ import {
     TextField,
 } from "@heroui/react";
 import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
 
 const LoginPage = () => {
     const router = useRouter();
@@ -20,37 +21,22 @@ const LoginPage = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
 
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+        const formData = new FormData(e.currentTarget);
+        const userData = Object.fromEntries(formData.entries());
 
-        const loginData = {
-            email: formData.get("email"),
-            password: formData.get("password"),
-        };
+        const { data, error } = await authClient.signIn.email({
+            email: userData.email,
+            password: userData.password,
+        });
 
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify(loginData),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                toast.error(data.message || "Invalid email or password");
-                return;
-            }
-
-            toast.success("Login successful");
-            router.push("/");
-            router.refresh();
-        } catch (error) {
-            toast.error("Something went wrong. Please try again.");
+        if (error) {
+            toast.error(error.message || "Invalid email or password");
+            return;
         }
+
+        toast.success("Login successful");
+        router.push("/");
+        router.refresh();
     };
 
     return (
@@ -74,9 +60,7 @@ const LoginPage = () => {
                         name="email"
                         type="email"
                         validate={(value) => {
-                            if (
-                                !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)
-                            ) {
+                            if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) {
                                 return "Please enter a valid email address";
                             }
                             return null;
