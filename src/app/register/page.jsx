@@ -57,6 +57,13 @@ const RegisterPage = () => {
         router.push("/login");
     };
 
+    const handleGoogleSignUp = async () => {
+        await authClient.signIn.social({
+            provider: "google",
+            callbackURL: "/",
+        });
+    };
+
     return (
         <section className="min-h-screen bg-[#F8F5EF] px-4 py-16 flex items-center justify-center">
             <div className="w-full max-w-md bg-white border border-[#E5E1D8] rounded-3xl shadow-sm p-8">
@@ -89,9 +96,7 @@ const RegisterPage = () => {
                         name="email"
                         type="email"
                         validate={(value) => {
-                            if (
-                                !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)
-                            ) {
+                            if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) {
                                 return "Please enter a valid email address";
                             }
                             return null;
@@ -151,7 +156,10 @@ const RegisterPage = () => {
                     </Button>
                 </Form>
 
-                <button className="w-full mt-4 border border-[#2F855A] text-[#2F855A] rounded-full py-3 font-semibold hover:bg-[#2F855A] hover:text-white transition">
+                <button
+                    onClick={handleGoogleSignUp}
+                    className="w-full mt-4 border border-[#2F855A] text-[#2F855A] rounded-full py-3 font-semibold hover:bg-[#2F855A] hover:text-white transition"
+                >
                     Continue with Google
                 </button>
 

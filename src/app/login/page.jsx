@@ -38,6 +38,13 @@ const LoginPage = () => {
         router.push("/");
         router.refresh();
     };
+    const handleGoogleSignUp = async () => {
+        await authClient.signIn.social({
+            provider: "google",
+            callbackURL: "/",
+        });
+    };
+
 
     return (
         <section className="min-h-screen bg-[#F8F5EF] px-4 py-16 flex items-center justify-center">
@@ -105,7 +112,7 @@ const LoginPage = () => {
                     </Button>
                 </Form>
 
-                <button className="w-full mt-4 border border-[#2F855A] text-[#2F855A] rounded-full py-3 font-semibold hover:bg-[#2F855A] hover:text-white transition">
+                <button onClick={handleGoogleSignUp} className="w-full mt-4 border border-[#2F855A] text-[#2F855A] rounded-full py-3 font-semibold hover:bg-[#2F855A] hover:text-white transition">
                     Continue with Google
                 </button>
 
