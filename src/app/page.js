@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Hero from "./Components/Hero";
 import AvailableRooms from "./Components/AvailableRooms";
+import WhyChoose from "./Components/WhyChoose";
 
 
 export default function Home() {
@@ -8,6 +9,7 @@ export default function Home() {
     <>
       <Hero />
       <AvailableRooms />
+      <WhyChoose />
     </>
   );
 }
