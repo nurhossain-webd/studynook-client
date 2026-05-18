@@ -1,12 +1,25 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FaBookOpen, FaUserCircle } from "react-icons/fa";
+import toast from "react-hot-toast";
 
-const Navbar = ({ user, handleLogout }) => {
+const Navbar = () => {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const { data: session } = authClient.useSession();
+    const user = session?.user;
+
+    const handleLogout = async () => {
+        await authClient.signOut();
+        toast.success("Logout successful");
+        router.push("/login");
+        router.refresh();
+    };
 
     const navLinks = (
         <>
@@ -39,7 +52,6 @@ const Navbar = ({ user, handleLogout }) => {
     return (
         <nav className="sticky top-0 z-50 bg-[#F8F5EF]/95 backdrop-blur-md border-b border-[#E5E1D8]">
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-                {/* Logo */}
                 <Link href="/" className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded-2xl bg-[#102A43] text-white flex items-center justify-center">
                         <FaBookOpen />
@@ -50,12 +62,10 @@ const Navbar = ({ user, handleLogout }) => {
                     </h1>
                 </Link>
 
-                {/* Desktop Links */}
                 <div className="hidden lg:flex items-center gap-7 font-medium text-[#1E293B]">
                     {navLinks}
                 </div>
 
-                {/* Desktop Auth */}
                 <div className="hidden lg:flex items-center gap-3">
                     {!user ? (
                         <>
@@ -82,10 +92,10 @@ const Navbar = ({ user, handleLogout }) => {
                     ) : (
                         <div className="relative group">
                             <button className="flex items-center gap-2">
-                                {user?.photoURL ? (
+                                {user?.image ? (
                                     <Image
-                                        src={user.photoURL}
-                                        alt={user.displayName || "User"}
+                                        src={user.image}
+                                        alt={user.name || "User"}
                                         width={40}
                                         height={40}
                                         className="w-10 h-10 rounded-full object-cover border-2 border-[#2F855A]"
@@ -95,7 +105,7 @@ const Navbar = ({ user, handleLogout }) => {
                                 )}
 
                                 <span className="font-medium text-[#102A43]">
-                                    {user?.displayName || "User"}
+                                    {user?.name || "User"}
                                 </span>
                             </button>
 
@@ -127,7 +137,6 @@ const Navbar = ({ user, handleLogout }) => {
                     )}
                 </div>
 
-                {/* Mobile Menu */}
                 <div className="lg:hidden">
                     <details className="relative">
                         <summary className="list-none cursor-pointer text-2xl text-[#102A43]">
