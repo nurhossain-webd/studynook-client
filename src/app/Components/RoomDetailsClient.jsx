@@ -3,12 +3,18 @@
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { FaDollarSign, FaLayerGroup, FaUsers } from "react-icons/fa";
 import UpdateRoomModal from "@/app/Components/UpdateRoomModal";
+import DeleteConfirmModal from "@/app/Components/DeleteConfirmModal";
 
 const RoomDetailsClient = ({ room }) => {
     const [showUpdateModal, setShowUpdateModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const router = useRouter();
 
     const { data: session } = authClient.useSession();
     const user = session?.user;
@@ -17,9 +23,14 @@ const RoomDetailsClient = ({ room }) => {
         return (
             <section className="min-h-screen bg-[#F8F5EF] flex items-center justify-center px-4">
                 <div className="bg-white p-10 rounded-3xl text-center border border-[#E5E1D8]">
-                    <h1 className="text-2xl font-bold text-[#102A43]">Room not found</h1>
+                    <h1 className="text-2xl font-bold text-[#102A43]">
+                        Room not found
+                    </h1>
 
-                    <Link href="/rooms" className="text-[#2F855A] font-semibold mt-4 block">
+                    <Link
+                        href="/rooms"
+                        className="text-[#2F855A] font-semibold mt-4 block"
+                    >
                         Back to Rooms
                     </Link>
                 </div>
@@ -28,6 +39,37 @@ const RoomDetailsClient = ({ room }) => {
     }
 
     const isOwner = user?.email === room.ownerEmail;
+
+    const handleDeleteRoom = async () => {
+        if (!user) {
+            toast.error("Please login first");
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/rooms/${room._id}?email=${user.email}`,
+                {
+                    method: "DELETE",
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error(data.message || "Failed to delete room");
+                return;
+            }
+
+            toast.success("Room deleted successfully");
+            setShowDeleteModal(false);
+            router.push("/rooms");
+            router.refresh();
+        } catch (error) {
+            console.log(error);
+            toast.error("Something went wrong");
+        }
+    };
 
     return (
         <section className="min-h-screen bg-[#F8F5EF] px-4 md:px-8 py-16">
@@ -106,12 +148,21 @@ const RoomDetailsClient = ({ room }) => {
                         )}
 
                         {isOwner && (
-                            <button
-                                onClick={() => setShowUpdateModal(true)}
-                                className="px-7 py-3 rounded-full bg-[#D97706] text-white font-semibold hover:bg-[#b45309] transition"
-                            >
-                                Update Room
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => setShowUpdateModal(true)}
+                                    className="px-7 py-3 rounded-full bg-[#D97706] text-white font-semibold hover:bg-[#b45309] transition"
+                                >
+                                    Update Room
+                                </button>
+
+                                <button
+                                    onClick={() => setShowDeleteModal(true)}
+                                    className="px-7 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition"
+                                >
+                                    Delete Room
+                                </button>
+                            </>
                         )}
 
                         <Link
@@ -128,6 +179,13 @@ const RoomDetailsClient = ({ room }) => {
                 <UpdateRoomModal
                     room={room}
                     onClose={() => setShowUpdateModal(false)}
+                />
+            )}
+
+            {showDeleteModal && (
+                <DeleteConfirmModal
+                    onClose={() => setShowDeleteModal(false)}
+                    onConfirm={handleDeleteRoom}
                 />
             )}
         </section>
