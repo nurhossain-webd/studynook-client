@@ -3,7 +3,9 @@ import Link from "next/link";
 import { FaDollarSign, FaLayerGroup, FaUsers } from "react-icons/fa";
 
 const getRooms = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {
+        cache: "no-store",
+    });
 
     return res.json();
 };
