@@ -1,43 +1,47 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FaLayerGroup, FaUsers, FaDollarSign } from "react-icons/fa";
+import { FaDollarSign, FaLayerGroup, FaUsers } from "react-icons/fa";
 
-const getLatestRooms = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/latest-rooms`, {
-        cache: "no-store",
-    });
+const getRooms = async () => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`);
 
     return res.json();
 };
 
-const AvailableRooms = async () => {
-    const rooms = await getLatestRooms();
+const RoomsPage = async () => {
+    const rooms = await getRooms();
 
     return (
-        <section className="bg-[#F8F5EF] px-4 md:px-8 py-16">
+        <section className="min-h-screen bg-[#F8F5EF] px-4 md:px-8 py-16">
             <div className="max-w-7xl mx-auto">
-
                 <div className="text-center mb-12">
                     <p className="text-[#2F855A] font-semibold mb-2">
                         Available Study Rooms
                     </p>
 
-                    <h2 className="text-3xl md:text-4xl font-bold text-[#102A43]">
-                        Latest Rooms for Focused Study
-                    </h2>
+                    <h1 className="text-3xl md:text-4xl font-bold text-[#102A43]">
+                        Browse All Study Rooms
+                    </h1>
 
                     <p className="text-[#64748B] mt-4 max-w-2xl mx-auto">
-                        Explore recently added study rooms and book the best space for your
-                        reading, research, meeting, or group work.
+                        Find quiet, comfortable, and private study rooms for reading,
+                        research, meetings, and group work.
                     </p>
                 </div>
 
                 {rooms.length === 0 ? (
-                    <p className="text-center text-[#64748B]">No rooms found.</p>
+                    <div className="text-center bg-white border border-[#E5E1D8] rounded-3xl p-12">
+                        <h2 className="text-2xl font-bold text-[#102A43]">
+                            No rooms found
+                        </h2>
+                        <p className="text-[#64748B] mt-3">
+                            There are no study rooms available right now.
+                        </p>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {rooms.map((room) => {
-                            const shownAmenities = room.amenities?.slice(0, 3);
+                            const shownAmenities = room.amenities?.slice(0, 3) || [];
                             const extraAmenities = room.amenities?.length - 3;
 
                             return (
@@ -59,12 +63,12 @@ const AvailableRooms = async () => {
                                         </h3>
 
                                         <p className="text-[#64748B] text-sm leading-relaxed mb-4">
-                                            {room.description.length > 100
+                                            {room.description?.length > 100
                                                 ? room.description.slice(0, 100) + "..."
                                                 : room.description}
                                         </p>
 
-                                        <div className="grid grid-cols-1 gap-2 text-sm text-[#1E293B] mb-4">
+                                        <div className="space-y-2 text-sm text-[#1E293B] mb-4">
                                             <p className="flex items-center gap-2">
                                                 <FaLayerGroup className="text-[#2F855A]" />
                                                 {room.floor}
@@ -82,7 +86,7 @@ const AvailableRooms = async () => {
                                         </div>
 
                                         <div className="flex flex-wrap gap-2 mb-6">
-                                            {shownAmenities?.map((amenity, index) => (
+                                            {shownAmenities.map((amenity, index) => (
                                                 <span
                                                     key={index}
                                                     className="px-3 py-1 rounded-full bg-[#F8F5EF] text-[#2F855A] text-xs font-medium"
@@ -110,18 +114,9 @@ const AvailableRooms = async () => {
                         })}
                     </div>
                 )}
-
-                <div className="text-center mt-10">
-                    <Link
-                        href="/rooms"
-                        className="inline-flex px-7 py-3 rounded-full border border-[#2F855A] text-[#2F855A] font-semibold hover:bg-[#2F855A] hover:text-white transition"
-                    >
-                        View All Rooms
-                    </Link>
-                </div>
             </div>
         </section>
     );
 };
 
-export default AvailableRooms;
+export default RoomsPage;
