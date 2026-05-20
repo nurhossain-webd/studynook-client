@@ -9,8 +9,10 @@ import toast from "react-hot-toast";
 import { FaDollarSign, FaLayerGroup, FaUsers } from "react-icons/fa";
 import UpdateRoomModal from "@/app/Components/UpdateRoomModal";
 import DeleteConfirmModal from "@/app/Components/DeleteConfirmModal";
+import BookingModal from "@/app/Components/BookingModal";
 
 const RoomDetailsClient = ({ room }) => {
+    const [showBookingModal, setShowBookingModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -142,7 +144,10 @@ const RoomDetailsClient = ({ room }) => {
 
                     <div className="mt-10 flex flex-col sm:flex-row gap-4">
                         {!isOwner && (
-                            <button className="px-7 py-3 rounded-full bg-[#2F855A] text-white font-semibold hover:bg-[#276749] transition">
+                            <button
+                                onClick={() => setShowBookingModal(true)}
+                                className="px-7 py-3 rounded-full bg-[#2F855A] text-white font-semibold hover:bg-[#276749] transition"
+                            >
                                 Book Now
                             </button>
                         )}
@@ -186,6 +191,13 @@ const RoomDetailsClient = ({ room }) => {
                 <DeleteConfirmModal
                     onClose={() => setShowDeleteModal(false)}
                     onConfirm={handleDeleteRoom}
+                />
+            )}
+            {showBookingModal && (
+                <BookingModal
+                    room={room}
+                    user={user}
+                    onClose={() => setShowBookingModal(false)}
                 />
             )}
         </section>
