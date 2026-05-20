@@ -1,9 +1,11 @@
 "use client";
 
+import CancelBookingModal from "@/app/Components/CancelBookingModal";
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const MyBookingsPage = () => {
     const { data: session } = authClient.useSession();
@@ -11,6 +13,7 @@ const MyBookingsPage = () => {
 
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedBooking, setSelectedBooking] = useState(null);
 
     useEffect(() => {
         if (!user?.email) return;
@@ -20,10 +23,54 @@ const MyBookingsPage = () => {
             .then((data) => {
                 setBookings(data);
                 setLoading(false);
+            })
+            .catch((error) => {
+                console.log(error);
+                toast.error("Failed to load bookings");
+                setLoading(false);
             });
     }, [user?.email]);
 
     const today = new Date().toISOString().split("T")[0];
+
+    const handleCancelBooking = async () => {
+        if (!selectedBooking || !user?.email) return;
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/bookings/${selectedBooking._id}/cancel`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email: user.email }),
+                }
+            );
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                toast.error(data.message || "Failed to cancel booking");
+                return;
+            }
+
+            toast.success("Booking cancelled");
+
+            setBookings((prev) =>
+                prev.map((booking) =>
+                    booking._id === selectedBooking._id
+                        ? { ...booking, status: "cancelled" }
+                        : booking
+                )
+            );
+
+            setSelectedBooking(null);
+        } catch (error) {
+            console.log(error);
+            toast.error("Something went wrong");
+        }
+    };
 
     if (!user) {
         return (
@@ -91,7 +138,7 @@ const MyBookingsPage = () => {
                                     key={booking._id}
                                     className="bg-white border border-[#E5E1D8] rounded-3xl shadow-sm hover:shadow-md transition overflow-hidden"
                                 >
-                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                                    <div className="grid grid-cols-1 lg:grid-cols-12">
                                         <div className="lg:col-span-3">
                                             <Image
                                                 src={booking.roomImage}
@@ -154,7 +201,10 @@ const MyBookingsPage = () => {
 
                                             <div className="lg:w-44">
                                                 {canCancel ? (
-                                                    <button className="w-full px-5 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition">
+                                                    <button
+                                                        onClick={() => setSelectedBooking(booking)}
+                                                        className="w-full px-5 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition"
+                                                    >
                                                         Cancel Booking
                                                     </button>
                                                 ) : (
@@ -174,6 +224,13 @@ const MyBookingsPage = () => {
                     </div>
                 )}
             </div>
+
+            {selectedBooking && (
+                <CancelBookingModal
+                    onClose={() => setSelectedBooking(null)}
+                    onConfirm={handleCancelBooking}
+                />
+            )}
         </section>
     );
 };
