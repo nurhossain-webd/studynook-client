@@ -1,0 +1,181 @@
+"use client";
+
+import { authClient } from "@/lib/auth-client";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const MyBookingsPage = () => {
+    const { data: session } = authClient.useSession();
+    const user = session?.user;
+
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!user?.email) return;
+
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings?email=${user.email}`)
+            .then((res) => res.json())
+            .then((data) => {
+                setBookings(data);
+                setLoading(false);
+            });
+    }, [user?.email]);
+
+    const today = new Date().toISOString().split("T")[0];
+
+    if (!user) {
+        return (
+            <section className="min-h-screen bg-[#F8F5EF] flex items-center justify-center px-4">
+                <div className="bg-white p-10 rounded-3xl border border-[#E5E1D8] text-center">
+                    <h1 className="text-2xl font-bold text-[#102A43]">
+                        Please login first
+                    </h1>
+
+                    <Link
+                        href="/login"
+                        className="inline-block mt-5 px-6 py-3 rounded-full bg-[#2F855A] text-white font-semibold"
+                    >
+                        Login
+                    </Link>
+                </div>
+            </section>
+        );
+    }
+
+    if (loading) {
+        return (
+            <section className="min-h-screen bg-[#F8F5EF] flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-[#E5E1D8] border-t-[#2F855A] rounded-full animate-spin"></div>
+            </section>
+        );
+    }
+
+    return (
+        <section className="min-h-screen bg-[#F8F5EF] px-4 md:px-8 py-16">
+            <div className="max-w-7xl mx-auto">
+                <div className="text-center mb-12">
+                    <p className="text-[#2F855A] font-semibold mb-2">My Bookings</p>
+
+                    <h1 className="text-3xl md:text-4xl font-bold text-[#102A43]">
+                        Manage Your Room Bookings
+                    </h1>
+
+                    <p className="text-[#64748B] mt-4">
+                        View your confirmed and cancelled study room reservations.
+                    </p>
+                </div>
+
+                {bookings.length === 0 ? (
+                    <div className="bg-white border border-[#E5E1D8] rounded-3xl p-12 text-center">
+                        <h2 className="text-2xl font-bold text-[#102A43]">
+                            You have no bookings yet.
+                        </h2>
+
+                        <Link
+                            href="/rooms"
+                            className="inline-block mt-6 px-7 py-3 rounded-full bg-[#2F855A] text-white font-semibold hover:bg-[#276749] transition"
+                        >
+                            Browse Rooms
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {bookings.map((booking) => {
+                            const canCancel =
+                                booking.status === "confirmed" && booking.date >= today;
+
+                            return (
+                                <div
+                                    key={booking._id}
+                                    className="bg-white border border-[#E5E1D8] rounded-3xl shadow-sm hover:shadow-md transition overflow-hidden"
+                                >
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                                        <div className="lg:col-span-3">
+                                            <Image
+                                                src={booking.roomImage}
+                                                alt={booking.roomName}
+                                                width={500}
+                                                height={320}
+                                                className="w-full h-56 lg:h-full object-cover"
+                                            />
+                                        </div>
+
+                                        <div className="lg:col-span-9 p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                                            <div className="flex-1">
+                                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                                                    <h3 className="text-2xl font-bold text-[#102A43]">
+                                                        {booking.roomName}
+                                                    </h3>
+
+                                                    <span
+                                                        className={`w-fit px-4 py-1 rounded-full text-sm font-semibold ${booking.status === "confirmed"
+                                                                ? "bg-green-100 text-green-700"
+                                                                : "bg-red-100 text-red-700"
+                                                            }`}
+                                                    >
+                                                        {booking.status}
+                                                    </span>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[#64748B]">
+                                                    <div className="bg-[#F8F5EF] rounded-2xl p-4">
+                                                        <p className="text-sm">Date</p>
+                                                        <h4 className="font-bold text-[#102A43]">
+                                                            {booking.date}
+                                                        </h4>
+                                                    </div>
+
+                                                    <div className="bg-[#F8F5EF] rounded-2xl p-4">
+                                                        <p className="text-sm">Time</p>
+                                                        <h4 className="font-bold text-[#102A43]">
+                                                            {booking.startTime} - {booking.endTime}
+                                                        </h4>
+                                                    </div>
+
+                                                    <div className="bg-[#F8F5EF] rounded-2xl p-4">
+                                                        <p className="text-sm">Total Cost</p>
+                                                        <h4 className="font-bold text-[#102A43]">
+                                                            ${booking.totalCost}
+                                                        </h4>
+                                                    </div>
+                                                </div>
+
+                                                {booking.note && (
+                                                    <p className="mt-4 text-[#64748B]">
+                                                        <span className="font-semibold text-[#102A43]">
+                                                            Note:
+                                                        </span>{" "}
+                                                        {booking.note}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="lg:w-44">
+                                                {canCancel ? (
+                                                    <button className="w-full px-5 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition">
+                                                        Cancel Booking
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        disabled
+                                                        className="w-full px-5 py-3 rounded-full bg-gray-200 text-gray-500 font-semibold cursor-not-allowed"
+                                                    >
+                                                        Not Cancellable
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </section>
+    );
+};
+
+export default MyBookingsPage;
