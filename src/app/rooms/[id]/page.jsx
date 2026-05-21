@@ -1,4 +1,9 @@
 import RoomDetailsClient from "@/app/Components/RoomDetailsClient";
+export const metadata = {
+
+    title: "StudyNook – Room Details",
+
+};
 
 const getRoomDetails = async (id) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`, {
@@ -6,6 +11,7 @@ const getRoomDetails = async (id) => {
     });
 
     if (!res.ok) return null;
+
     return res.json();
 };
 

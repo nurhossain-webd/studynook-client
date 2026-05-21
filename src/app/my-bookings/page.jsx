@@ -8,6 +8,11 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const MyBookingsPage = () => {
+    useEffect(() => {
+
+        document.title = "StudyNook – My Bookings";
+
+    }, []);
     const { data: session } = authClient.useSession();
     const user = session?.user;
 
@@ -158,8 +163,8 @@ const MyBookingsPage = () => {
 
                                                     <span
                                                         className={`w-fit px-4 py-1 rounded-full text-sm font-semibold ${booking.status === "confirmed"
-                                                                ? "bg-green-100 text-green-700"
-                                                                : "bg-red-100 text-red-700"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : "bg-red-100 text-red-700"
                                                             }`}
                                                     >
                                                         {booking.status}

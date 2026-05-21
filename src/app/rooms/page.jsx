@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FaDollarSign, FaLayerGroup, FaUsers } from "react-icons/fa";
+export const metadata = {
+    title: "StudyNook – Available Rooms",
+};
 
 const getRooms = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {

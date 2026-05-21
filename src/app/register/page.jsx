@@ -15,7 +15,14 @@ import {
 } from "@heroui/react";
 import toast from "react-hot-toast";
 
+import { useEffect } from "react";
+
 const RegisterPage = () => {
+    useEffect(() => {
+
+        document.title = "StudyNook – Register";
+
+    }, []);
     const router = useRouter();
 
     const onSubmit = async (e) => {

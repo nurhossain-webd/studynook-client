@@ -13,6 +13,7 @@ import {
     TextArea,
 } from "@heroui/react";
 import toast from "react-hot-toast";
+import { useEffect } from "react";
 
 const amenitiesList = [
     "Whiteboard",
@@ -24,6 +25,11 @@ const amenitiesList = [
 ];
 
 const AddRoomPage = () => {
+    useEffect(() => {
+
+        document.title = "StudyNook – Add Room";
+
+    }, []);
     const router = useRouter();
     const { data: session } = authClient.useSession();
     const user = session?.user;

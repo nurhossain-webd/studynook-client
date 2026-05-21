@@ -14,8 +14,16 @@ import {
 } from "@heroui/react";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
+import { useEffect } from "react";
+
 
 const LoginPage = () => {
+
+    useEffect(() => {
+
+        document.title = "StudyNook – Login";
+
+    }, []);
     const router = useRouter();
 
     const onSubmit = async (e) => {
