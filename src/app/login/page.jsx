@@ -16,15 +16,12 @@ import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import { useEffect } from "react";
 
-
 const LoginPage = () => {
+    const router = useRouter();
 
     useEffect(() => {
-
         document.title = "StudyNook – Login";
-
     }, []);
-    const router = useRouter();
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -32,33 +29,45 @@ const LoginPage = () => {
         const formData = new FormData(e.currentTarget);
         const userData = Object.fromEntries(formData.entries());
 
-        const { data, error } = await authClient.signIn.email({
-            email: userData.email,
-            password: userData.password,
-        });
+        try {
+            const { data, error } = await authClient.signIn.email({
+                email: userData.email,
+                password: userData.password,
+            });
 
-        if (error) {
-            toast.error(error.message || "Invalid email or password");
-            return;
+            if (error) {
+                toast.error(error.message || "Invalid email or password");
+                return;
+            }
+
+            toast.success("Login successful");
+            router.push("/");
+            router.refresh();
+        } catch (error) {
+            console.log(error);
+            toast.error("Login failed");
         }
-
-        toast.success("Login successful");
-        router.push("/");
-        router.refresh();
-    };
-    const handleGoogleSignUp = async () => {
-        await authClient.signIn.social({
-            provider: "google",
-            callbackURL: "/",
-        });
     };
 
+    const handleGoogleSignIn = async () => {
+        try {
+            await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/",
+            });
+        } catch (error) {
+            console.log(error);
+            toast.error("Google login failed");
+        }
+    };
 
     return (
         <section className="min-h-screen bg-[#F8F5EF] px-4 py-16 flex items-center justify-center">
             <div className="w-full max-w-md bg-white border border-[#E5E1D8] rounded-3xl shadow-sm p-8">
                 <div className="text-center mb-8">
-                    <p className="text-[#2F855A] font-semibold mb-2">Welcome Back</p>
+                    <p className="text-[#2F855A] font-semibold mb-2">
+                        Welcome Back
+                    </p>
 
                     <h1 className="text-3xl font-bold text-[#102A43]">
                         Login to StudyNook
@@ -120,7 +129,11 @@ const LoginPage = () => {
                     </Button>
                 </Form>
 
-                <button onClick={handleGoogleSignUp} className="w-full mt-4 border border-[#2F855A] text-[#2F855A] rounded-full py-3 font-semibold hover:bg-[#2F855A] hover:text-white transition">
+                <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    className="w-full mt-4 border border-[#2F855A] text-[#2F855A] rounded-full py-3 font-semibold hover:bg-[#2F855A] hover:text-white transition"
+                >
                     Continue with Google
                 </button>
 

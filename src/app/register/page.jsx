@@ -14,16 +14,14 @@ import {
     TextField,
 } from "@heroui/react";
 import toast from "react-hot-toast";
-
 import { useEffect } from "react";
 
 const RegisterPage = () => {
-    useEffect(() => {
-
-        document.title = "StudyNook – Register";
-
-    }, []);
     const router = useRouter();
+
+    useEffect(() => {
+        document.title = "StudyNook – Register";
+    }, []);
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -48,27 +46,37 @@ const RegisterPage = () => {
             return;
         }
 
-        const { data, error } = await authClient.signUp.email({
-            name: userData.name,
-            email: userData.email,
-            password: userData.password,
-            image: userData.photoURL,
-        });
+        try {
+            const { data, error } = await authClient.signUp.email({
+                name: userData.name,
+                email: userData.email,
+                password: userData.password,
+                image: userData.photoURL,
+            });
 
-        if (error) {
-            toast.error(error.message || "Registration failed");
-            return;
+            if (error) {
+                toast.error(error.message || "Registration failed");
+                return;
+            }
+
+            toast.success("Registration successful! Please login.");
+            router.push("/login");
+        } catch (error) {
+            console.log(error);
+            toast.error("Registration failed");
         }
-
-        toast.success("Registration successful! Please login.");
-        router.push("/login");
     };
 
     const handleGoogleSignUp = async () => {
-        await authClient.signIn.social({
-            provider: "google",
-            callbackURL: "/",
-        });
+        try {
+            await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/",
+            });
+        } catch (error) {
+            console.log(error);
+            toast.error("Google registration failed");
+        }
     };
 
     return (
@@ -164,6 +172,7 @@ const RegisterPage = () => {
                 </Form>
 
                 <button
+                    type="button"
                     onClick={handleGoogleSignUp}
                     className="w-full mt-4 border border-[#2F855A] text-[#2F855A] rounded-full py-3 font-semibold hover:bg-[#2F855A] hover:text-white transition"
                 >
