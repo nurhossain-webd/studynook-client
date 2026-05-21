@@ -1,8 +1,7 @@
 import RoomDetailsClient from "@/app/Components/RoomDetailsClient";
+
 export const metadata = {
-
     title: "StudyNook – Room Details",
-
 };
 
 const getRoomDetails = async (id) => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import { useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -45,19 +46,12 @@ const BookingModal = ({ room, user, onClose }) => {
             return;
         }
 
-        if (!process.env.NEXT_PUBLIC_API_URL) {
-            toast.error("API URL is missing");
-            return;
-        }
-
         const formData = new FormData(e.currentTarget);
 
         const bookingData = {
             roomId: room._id,
             roomName: room.roomName,
             roomImage: room.image,
-            userEmail: user.email,
-            userName: user.name,
             date: formData.get("date"),
             startTime,
             endTime,
@@ -70,19 +64,27 @@ const BookingModal = ({ room, user, onClose }) => {
             return;
         }
 
+        const { data, error } = await authClient.token();
+
+        if (error || !data?.token) {
+            toast.error("Authentication token missing");
+            return;
+        }
+
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${data.token}`,
                 },
                 body: JSON.stringify(bookingData),
             });
 
-            const data = await res.json().catch(() => ({}));
+            const result = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-                toast.error(data.message || "Booking failed");
+                toast.error(result.message || "Booking failed");
                 return;
             }
 

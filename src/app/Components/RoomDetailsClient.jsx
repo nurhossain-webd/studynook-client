@@ -48,18 +48,28 @@ const RoomDetailsClient = ({ room }) => {
             return;
         }
 
+        const { data, error } = await authClient.token();
+
+        if (error || !data?.token) {
+            toast.error("Authentication token missing");
+            return;
+        }
+
         try {
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/rooms/${room._id}?email=${user.email}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/rooms/${room._id}`,
                 {
                     method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${data.token}`,
+                    },
                 }
             );
 
-            const data = await res.json();
+            const result = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-                toast.error(data.message || "Failed to delete room");
+                toast.error(result.message || "Failed to delete room");
                 return;
             }
 
@@ -144,12 +154,21 @@ const RoomDetailsClient = ({ room }) => {
 
                     <div className="mt-10 flex flex-col sm:flex-row gap-4">
                         {!isOwner && (
-                            <button
-                                onClick={() => setShowBookingModal(true)}
-                                className="px-7 py-3 rounded-full bg-[#2F855A] text-white font-semibold hover:bg-[#276749] transition"
-                            >
-                                Book Now
-                            </button>
+                            user ? (
+                                <button
+                                    onClick={() => setShowBookingModal(true)}
+                                    className="px-7 py-3 rounded-full bg-[#2F855A] text-white font-semibold hover:bg-[#276749] transition"
+                                >
+                                    Book Now
+                                </button>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="px-7 py-3 rounded-full bg-[#2F855A] text-white font-semibold hover:bg-[#276749] transition text-center"
+                                >
+                                    Login to Book
+                                </Link>
+                            )
                         )}
 
                         {isOwner && (
@@ -193,6 +212,7 @@ const RoomDetailsClient = ({ room }) => {
                     onConfirm={handleDeleteRoom}
                 />
             )}
+
             {showBookingModal && (
                 <BookingModal
                     room={room}

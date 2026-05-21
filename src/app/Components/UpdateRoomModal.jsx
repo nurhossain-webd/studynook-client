@@ -1,5 +1,6 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import { Check } from "@gravity-ui/icons";
 import {
     Button,
@@ -36,6 +37,13 @@ const UpdateRoomModal = ({ room, onClose }) => {
         updatedRoom.hourlyRate = Number(updatedRoom.hourlyRate);
         updatedRoom.updatedAt = new Date();
 
+        const { data, error } = await authClient.token();
+
+        if (error || !data?.token) {
+            toast.error("Authentication token missing");
+            return;
+        }
+
         try {
             const res = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/rooms/${room._id}`,
@@ -43,13 +51,16 @@ const UpdateRoomModal = ({ room, onClose }) => {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${data.token}`,
                     },
                     body: JSON.stringify(updatedRoom),
                 }
             );
 
+            const result = await res.json().catch(() => ({}));
+
             if (!res.ok) {
-                toast.error("Failed to update room");
+                toast.error(result.message || "Failed to update room");
                 return;
             }
 

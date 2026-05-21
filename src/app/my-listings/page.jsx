@@ -19,19 +19,42 @@ const MyListingsPage = () => {
     }, []);
 
     useEffect(() => {
-        if (!user?.email) return;
+        const loadMyListings = async () => {
+            if (!user?.email) return;
 
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/my-listings?email=${user.email}`)
-            .then((res) => res.json())
-            .then((data) => {
-                setRooms(data);
+            const { data, error } = await authClient.token();
+
+            if (error || !data?.token) {
+                toast.error("Authentication token missing");
                 setLoading(false);
-            })
-            .catch((error) => {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/my-listings`, {
+                    headers: {
+                        Authorization: `Bearer ${data.token}`,
+                    },
+                });
+
+                const result = await res.json().catch(() => []);
+
+                if (!res.ok) {
+                    toast.error("Failed to load your listings");
+                    setLoading(false);
+                    return;
+                }
+
+                setRooms(result);
+                setLoading(false);
+            } catch (error) {
                 console.log(error);
                 toast.error("Failed to load your listings");
                 setLoading(false);
-            });
+            }
+        };
+
+        loadMyListings();
     }, [user?.email]);
 
     if (isPending || loading) {

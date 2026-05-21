@@ -8,12 +8,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const MyBookingsPage = () => {
-    useEffect(() => {
-
-        document.title = "StudyNook – My Bookings";
-
-    }, []);
-    const { data: session } = authClient.useSession();
+    const { data: session, isPending } = authClient.useSession();
     const user = session?.user;
 
     const [bookings, setBookings] = useState([]);
@@ -21,25 +16,59 @@ const MyBookingsPage = () => {
     const [selectedBooking, setSelectedBooking] = useState(null);
 
     useEffect(() => {
-        if (!user?.email) return;
+        document.title = "StudyNook – My Bookings";
+    }, []);
 
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings?email=${user.email}`)
-            .then((res) => res.json())
-            .then((data) => {
-                setBookings(data);
+    useEffect(() => {
+        const loadBookings = async () => {
+            if (!user?.email) return;
+
+            const { data, error } = await authClient.token();
+
+            if (error || !data?.token) {
+                toast.error("Authentication token missing");
                 setLoading(false);
-            })
-            .catch((error) => {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings`, {
+                    headers: {
+                        Authorization: `Bearer ${data.token}`,
+                    },
+                });
+
+                const result = await res.json().catch(() => []);
+
+                if (!res.ok) {
+                    toast.error("Failed to load bookings");
+                    setLoading(false);
+                    return;
+                }
+
+                setBookings(result);
+                setLoading(false);
+            } catch (error) {
                 console.log(error);
                 toast.error("Failed to load bookings");
                 setLoading(false);
-            });
+            }
+        };
+
+        loadBookings();
     }, [user?.email]);
 
     const today = new Date().toISOString().split("T")[0];
 
     const handleCancelBooking = async () => {
         if (!selectedBooking || !user?.email) return;
+
+        const { data, error } = await authClient.token();
+
+        if (error || !data?.token) {
+            toast.error("Authentication token missing");
+            return;
+        }
 
         try {
             const res = await fetch(
@@ -48,15 +77,15 @@ const MyBookingsPage = () => {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${data.token}`,
                     },
-                    body: JSON.stringify({ email: user.email }),
                 }
             );
 
-            const data = await res.json().catch(() => ({}));
+            const result = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-                toast.error(data.message || "Failed to cancel booking");
+                toast.error(result.message || "Failed to cancel booking");
                 return;
             }
 
@@ -77,6 +106,19 @@ const MyBookingsPage = () => {
         }
     };
 
+    if (isPending || loading) {
+        return (
+            <section className="min-h-screen bg-[#F8F5EF] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-12 h-12 mx-auto border-4 border-[#E5E1D8] border-t-[#2F855A] rounded-full animate-spin"></div>
+                    <p className="mt-4 text-[#64748B] font-medium">
+                        Loading your bookings...
+                    </p>
+                </div>
+            </section>
+        );
+    }
+
     if (!user) {
         return (
             <section className="min-h-screen bg-[#F8F5EF] flex items-center justify-center px-4">
@@ -92,14 +134,6 @@ const MyBookingsPage = () => {
                         Login
                     </Link>
                 </div>
-            </section>
-        );
-    }
-
-    if (loading) {
-        return (
-            <section className="min-h-screen bg-[#F8F5EF] flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-[#E5E1D8] border-t-[#2F855A] rounded-full animate-spin"></div>
             </section>
         );
     }
@@ -162,10 +196,11 @@ const MyBookingsPage = () => {
                                                     </h3>
 
                                                     <span
-                                                        className={`w-fit px-4 py-1 rounded-full text-sm font-semibold ${booking.status === "confirmed"
-                                                            ? "bg-green-100 text-green-700"
-                                                            : "bg-red-100 text-red-700"
-                                                            }`}
+                                                        className={`w-fit px-4 py-1 rounded-full text-sm font-semibold ${
+                                                            booking.status === "confirmed"
+                                                                ? "bg-green-100 text-green-700"
+                                                                : "bg-red-100 text-red-700"
+                                                        }`}
                                                     >
                                                         {booking.status}
                                                     </span>

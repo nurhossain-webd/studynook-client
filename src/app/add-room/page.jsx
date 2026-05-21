@@ -25,17 +25,22 @@ const amenitiesList = [
 ];
 
 const AddRoomPage = () => {
-    useEffect(() => {
-
-        document.title = "StudyNook – Add Room";
-
-    }, []);
     const router = useRouter();
     const { data: session } = authClient.useSession();
     const user = session?.user;
 
+    useEffect(() => {
+        document.title = "StudyNook – Add Room";
+    }, []);
+
     const onSubmit = async (e) => {
         e.preventDefault();
+
+        if (!user) {
+            toast.error("Please login first");
+            router.push("/login");
+            return;
+        }
 
         const formData = new FormData(e.currentTarget);
         const newRoom = Object.fromEntries(formData.entries());
@@ -43,18 +48,20 @@ const AddRoomPage = () => {
         newRoom.amenities = formData.getAll("amenities");
         newRoom.capacity = Number(newRoom.capacity);
         newRoom.hourlyRate = Number(newRoom.hourlyRate);
-        newRoom.bookingCount = 0;
-        newRoom.ownerEmail = user.email;
-        newRoom.ownerName = user.name;
-        newRoom.createdAt = new Date();
 
+        const { data, error } = await authClient.token();
 
+        if (error || !data?.token) {
+            toast.error("Authentication token missing");
+            return;
+        }
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${data.token}`,
                 },
                 body: JSON.stringify(newRoom),
             });
@@ -67,6 +74,7 @@ const AddRoomPage = () => {
             toast.success("Room added successfully");
             router.push("/my-listings");
         } catch (error) {
+            console.log(error);
             toast.error("Something went wrong");
         }
     };
